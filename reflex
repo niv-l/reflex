@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# qsearch <service> [i]    -> i == interactive (uppercase binding)
+# reflex <service> [i]    -> i == interactive (uppercase binding)
 # author: Nivyan Lakhani
 
 set -euo pipefail
