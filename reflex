@@ -28,8 +28,8 @@ urlencode() { jq -s -R -r @uri; }   # quick URL encoder via jq
 #
 if [[ $interactive ]]; then
     query=$(
-        rofi -show qsearch \
-             -modi "qsearch:~/.local/bin/qsearch_complete ${service}"
+        rofi -show reflex \
+             -modi "reflex:~/.local/bin/reflex_complete ${service}"
     )
 else
     # I use wayland, replace this with your environment's equivalent .
