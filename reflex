@@ -10,7 +10,7 @@ elvis=${1:?Usage: $0 <surfraw_elvis> [i]}
 interactive=${2:-}
 
 if [[ $interactive ]]; then
-    query=$(rofi -dmenu -p "$elvis > ")
+    query=$(rofi -dmenu -p "$elvis >")
 else
     # I use wayland, replace this with your environment's equivalent.
     query=$(wl-paste --primary --no-newline)
