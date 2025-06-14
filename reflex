@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # reflex <surfraw-elvis> [i]    -> i == interactive
-# A tiny wrapper for surfraw that searches the highlighted text with chosen web service
+# A tiny wrapper for surfraw that searches the highlighted text with a chosen web service.
 
 set -euo pipefail
 
@@ -12,14 +12,14 @@ interactive=${2:-}
 if [[ $interactive ]]; then
     query=$(rofi -dmenu -p "$elvis")
 else
-    # Assumes Wayland. For X11, use `xclip -o`.
+    # I use wayland, replace this with your environment's equivalent.
     query=$(wl-paste --primary --no-newline)
 fi
 
 [[ -z "$query" ]] && exit 0
 
 # Get the URL from surfraw without opening it
-url=$(surfraw -print "$elvis" -- "$query")
+url=$(surfraw -print "$elvis" -- $query)
 
 # Open that URL with a specific browser (e.g., Vivaldi)
-vivaldi $url &>/dev/null &
+vivaldi $url
