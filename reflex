@@ -10,7 +10,7 @@ elvis_or_flag=${1:?Usage: $0 <surfraw_elvis>|-c|--choose [i]}
 interactive=${2:-}
 
 if [[ $elvis_or_flag == "-c" || $elvis_or_flag == "--choose" ]]; then
-    selection=$(surfraw -elvi | rofi -dmenu -p "elvis >")
+    selection=$(surfraw -elvi | grep -v 'ELVI:' | grep -v '^$' | rofi -dmenu -p "elvis >")
     [[ -z $selection ]] && exit 0
     elvis=${selection%%[[:space:]]*}
 else
@@ -22,9 +22,11 @@ fi
 if [[ $interactive ]]; then
     query=$(rofi -dmenu -p "$elvis >")
 else
+    # I use Wayland, replace this with your environment's equivalent.
     query=$(wl-paste --primary --no-newline)
 fi
 
 [[ -z "$query" ]] && exit 0
 
+# Let surfraw handle the browser invocation.
 surfraw "$elvis" -browser=vivaldi-stable "$query" &>/dev/null &
