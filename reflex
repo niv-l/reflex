@@ -1,42 +1,25 @@
 #!/usr/bin/env bash
-# reflex <service> [i]    -> i == interactive (uppercase binding)
-# author: Nivyan Lakhani
+# reflex <surfraw-elvis> [i]    -> i == interactive
+# A tiny wrapper for surfraw that searches the highlighted text with chosen web service
 
 set -euo pipefail
 
-service=$1                # w g c m …
-interactive=${2-""}       # "i" or ""
+command -v surfraw >/dev/null || { echo "surfraw is not installed." >&2; exit 1; }
 
-# -----------------------------------------------------------------------------
-# Build base-URL for every service
-# -----------------------------------------------------------------------------
+elvis=${1:?Usage: $0 <surfraw_elvis> [i]}
+interactive=${2:-}
 
-case "$service" in
-  w) base='https://en.wikipedia.org/w/index.php?search='             ;;
-  g) base='https://www.google.com/search?q='                         ;;
-  s) base='https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=' ;;
-  c) base='https://github.com/search?q='                             ;;
-  m) base='https://www.wolframalpha.com/input/?i='                   ;;
-  *) echo "unknown service"; exit 1                                  ;;
-esac
-
-urlencode() { jq -s -R -r @uri; }   # quick URL encoder via jq
-
-# -----------------------------------------------------------------------------
-# Get the query
-# -----------------------------------------------------------------------------
-#
 if [[ $interactive ]]; then
-    query=$(
-        rofi -show reflex \
-             -modi "reflex:~/.local/bin/reflex_complete ${service}"
-    )
+    query=$(rofi -dmenu -p "$elvis")
 else
-    # I use wayland, replace this with your environment's equivalent .
-    query=$(wl-paste --primary --no-newline | tr -d '\n')
+    # Assumes Wayland. For X11, use `xclip -o`.
+    query=$(wl-paste --primary --no-newline)
 fi
 
-[[ -z $query ]] && exit 0
+[[ -z "$query" ]] && exit 0
 
-# uses xdg-open. replace it to specify a browser
-xdg-open "${base}$(printf '%s' "$query" | urlencode)" >/dev/null 2>&1 &
+# Get the URL from surfraw without opening it
+url=$(surfraw -print "$elvis" -- "$query")
+
+# Open that URL with a specific browser (e.g., Vivaldi)
+vivaldi $url &>/dev/null &
