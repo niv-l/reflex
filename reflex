@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
-# reflex <surfraw-elvis> [i]    -> i == interactive
+# reflex <surfraw-elvis>|-c|--choose [i]  -> i == interactive
 # A tiny wrapper for surfraw that searches the highlighted text with a chosen web service.
 
 set -euo pipefail
 
 command -v surfraw >/dev/null || { echo "surfraw is not installed." >&2; exit 1; }
 
-elvis=${1:?Usage: $0 <surfraw_elvis> [i]}
+elvis=${1:?Usage: $0 <surfraw_elvis>|-c|--choose [i]}
 interactive=${2:-}
+
+# pick an elvis if requested
+if [[ $elvis == "-c" || $elvis == "--choose" ]]; then
+    elvis=$(surfraw -elvi | awk '{print $1}' | rofi -dmenu -p "elvis >")
+fi
+
+[[ -z "$elvis" ]] && exit 0
 
 if [[ $interactive ]]; then
     query=$(rofi -dmenu -p "$elvis >")
@@ -18,5 +25,4 @@ fi
 
 [[ -z "$query" ]] && exit 0
 
-# Let surfraw handle the browser invocation.
-surfraw "$elvis" -browser=vivaldi-stable $query &>/dev/null &
+surfraw "$elvis" -browser=vivaldi-stable "$query" &>/dev/null &
