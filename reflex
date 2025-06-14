@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-# reflex <surfraw-elvis>|-c|--choose [i]  -> i == interactive
+# reflex <surfraw-elvis>|-c|--choose [i]    -> i == interactive
 # A tiny wrapper for surfraw that searches the highlighted text with a chosen web service.
 
 set -euo pipefail
 
 command -v surfraw >/dev/null || { echo "surfraw is not installed." >&2; exit 1; }
 
-elvis=${1:?Usage: $0 <surfraw_elvis>|-c|--choose [i]}
+elvis_or_flag=${1:?Usage: $0 <surfraw_elvis>|-c|--choose [i]}
 interactive=${2:-}
 
-# pick an elvis if requested
-if [[ $elvis == "-c" || $elvis == "--choose" ]]; then
-    elvis=$(surfraw -elvi | awk '{print $1}' | rofi -dmenu -p "elvis >")
+if [[ $elvis_or_flag == "-c" || $elvis_or_flag == "--choose" ]]; then
+    selection=$(surfraw -elvi | rofi -dmenu -p "elvis >")
+    [[ -z $selection ]] && exit 0
+    elvis=${selection%%[[:space:]]*}
+else
+    elvis=$elvis_or_flag
 fi
 
 [[ -z "$elvis" ]] && exit 0
@@ -19,7 +22,6 @@ fi
 if [[ $interactive ]]; then
     query=$(rofi -dmenu -p "$elvis >")
 else
-    # I use wayland, replace this with your environment's equivalent.
     query=$(wl-paste --primary --no-newline)
 fi
 
