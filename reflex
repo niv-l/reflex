@@ -1,42 +1,32 @@
 #!/usr/bin/env bash
-# reflex <service> [i]    -> i == interactive (uppercase binding)
-# author: Nivyan Lakhani
+# reflex <surfraw-elvis>|-c|--choose [i]    -> i == interactive
+# A tiny wrapper for surfraw that searches the highlighted text with a chosen web service.
 
 set -euo pipefail
 
-service=$1                # w g c m …
-interactive=${2-""}       # "i" or ""
+command -v surfraw >/dev/null || { echo "surfraw is not installed." >&2; exit 1; }
 
-# -----------------------------------------------------------------------------
-# Build base-URL for every service
-# -----------------------------------------------------------------------------
+elvis_or_flag=${1:?Usage: $0 <surfraw_elvis>|-c|--choose [i]}
+interactive=${2:-}
 
-case "$service" in
-  w) base='https://en.wikipedia.org/w/index.php?search='             ;;
-  g) base='https://www.google.com/search?q='                         ;;
-  s) base='https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=' ;;
-  c) base='https://github.com/search?q='                             ;;
-  m) base='https://www.wolframalpha.com/input/?i='                   ;;
-  *) echo "unknown service"; exit 1                                  ;;
-esac
-
-urlencode() { jq -s -R -r @uri; }   # quick URL encoder via jq
-
-# -----------------------------------------------------------------------------
-# Get the query
-# -----------------------------------------------------------------------------
-#
-if [[ $interactive ]]; then
-    query=$(
-        rofi -show reflex \
-             -modi "reflex:~/.local/bin/reflex_complete ${service}"
-    )
+if [[ $elvis_or_flag == "-c" || $elvis_or_flag == "--choose" ]]; then
+    selection=$(surfraw -elvi | grep -v 'ELVI:' | grep -v '^$' | rofi -dmenu -p "elvis >")
+    [[ -z $selection ]] && exit 0
+    elvis=${selection%%[[:space:]]*}
 else
-    # I use wayland, replace this with your environment's equivalent .
-    query=$(wl-paste --primary --no-newline | tr -d '\n')
+    elvis=$elvis_or_flag
 fi
 
-[[ -z $query ]] && exit 0
+[[ -z "$elvis" ]] && exit 0
 
-# uses xdg-open. replace it to specify a browser
-xdg-open "${base}$(printf '%s' "$query" | urlencode)" >/dev/null 2>&1 &
+if [[ $interactive ]]; then
+    query=$(rofi -dmenu -p "$elvis >")
+else
+    # I use Wayland, replace this with your environment's equivalent.
+    query=$(wl-paste --primary --no-newline)
+fi
+
+[[ -z "$query" ]] && exit 0
+
+# Let surfraw handle the browser invocation.
+surfraw "$elvis" -browser=vivaldi-stable "$query" &>/dev/null &
