@@ -18,8 +18,5 @@ fi
 
 [[ -z "$query" ]] && exit 0
 
-# Get the URL from surfraw without opening it
-url=$(surfraw -print "$elvis" -- $query)
-
-# Open that URL with a specific browser (e.g., Vivaldi)
-vivaldi $url
+# Let surfraw handle the browser invocation.
+surfraw "$elvis" -browser=vivaldi-stable $query &>/dev/null &
