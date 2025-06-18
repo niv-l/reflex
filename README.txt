@@ -33,6 +33,9 @@ Browser:
 Change the `-browser=` flag in the final `surfraw` command to your
 preferred browser, or remove it to use the surfraw default.
 
+NOTE: The script now tries to guess your compositor and adjusts the
+command accordingly.
+
 Clipboard Utility (for X11):
 The script defaults to `wl-paste` for Wayland. For X11, replace the
 `query=$(wl-paste ...)` line with one of the following:
