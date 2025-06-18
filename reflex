@@ -22,11 +22,20 @@ fi
 if [[ $interactive ]]; then
     query=$(rofi -dmenu -p "$elvis >")
 else
-    # I use Wayland, replace this with your environment's equivalent.
-    query=$(wl-paste --primary --no-newline)
+    # Automatically detect environment to get primary selection.
+    if [[ -n "$WAYLAND_DISPLAY" ]]; then
+        command -v wl-paste >/dev/null || { echo "wl-paste not found for Wayland session." >&2; exit 1; }
+        query=$(wl-paste --primary --no-newline)
+    elif [[ -n "$DISPLAY" ]]; then
+        command -v xsel >/dev/null || { echo "xsel not found for X11 session." >&2; exit 1; }
+        query=$(xsel -o -p)
+    else
+        echo "Error: Could not determine session type (no WAYLAND_DISPLAY or DISPLAY)." >&2
+        exit 1
+    fi
 fi
 
 [[ -z "$query" ]] && exit 0
 
 # Let surfraw handle the browser invocation.
-surfraw "$elvis" -browser=vivaldi-stable "$query" &>/dev/null &
+surfraw "$elvis" -browser=vivaldi-stable $query &>/dev/null &
